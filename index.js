@@ -23,6 +23,7 @@ app.get('/data',(req,res) => {
     const hasPlayerName = send_data.every(item => item.playername);
     if (hasPlayerName) {
       res.json(send_data);
+      send_data = null;
     } else {
       res.status(400).json({ error: 'playername property is missing in some elements' });
     }
