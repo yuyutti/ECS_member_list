@@ -49,6 +49,13 @@
                                         <td class="text-center align-middle">${item.powerpointZB}</td>
                                     </tr>
                                 `;
+                                if (index === response.length - 1) {
+                                    html += `
+                                        <tr>
+                                            <td>更新日時: ${item.update}</td>
+                                        </tr>
+                                    `;
+                                }
                             });
                             $('#Loading').hide();
                             tableBody.html(html);
