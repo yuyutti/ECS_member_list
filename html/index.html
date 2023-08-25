@@ -38,7 +38,7 @@
                         $(document).ready(function() {
                             const tableBody = $('#send_data');
                             let html = '';
-                            response.forEach(item => {
+                            for (let i = 0; i < response.length; i++) {
                                 html += `
                                     <tr>
                                         <td class="text-center align-middle"><a href="${item.TrackerURL}" target="_blank" rel="noopener noreferrer" class="link-info">${item.playername}</a></td>
@@ -49,14 +49,14 @@
                                         <td class="text-center align-middle">${item.powerpointZB}</td>
                                     </tr>
                                 `;
-                                if (index === response.length - 1) {
+                                if (i === response.length - 1) {
                                     html += `
                                         <tr>
                                             <td>更新日時: ${item.update}</td>
                                         </tr>
                                     `;
                                 }
-                            });
+                            }
                             $('#Loading').hide();
                             tableBody.html(html);
                         });
