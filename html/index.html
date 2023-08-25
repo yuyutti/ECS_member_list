@@ -40,6 +40,7 @@
                             const tableBody = $('#send_data');
                             const update = $('#update')
                             let html = '';
+                            let update_html
                             for (let i = 0; i < response.length; i++) {
                                 const item = response[i];
 
@@ -54,7 +55,7 @@
                                     </tr>
                                 `;
                                 if (i === response.length - 1) {
-                                    const update_html = `
+                                    update_html = `
                                         <p>更新日時: ${response[0].update}</p>
                                     `;
                                 }
