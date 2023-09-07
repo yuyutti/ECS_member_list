@@ -43,7 +43,9 @@
         if(id === "ecg_n"){
             $("title").text("ECG-Esports 育成部門メンバーリスト")
         }
-        else id = 'ecs'
+        if(id === "ecg_zb"){
+            $("title").text("ECG-Esports ゼロビルド部門メンバーリスト")
+        }
         const req_interval = 1000;
         function req() {
             $.ajax({
@@ -53,8 +55,8 @@
                     if (xhr.status === 200) {
                         $(document).ready(function() {
                             const tableBody = $('#send_data');
-                            const update = $('#update')
-                            const unacquired = $('#unacquired')
+                            const update = $('#update');
+                            const unacquired = $('#unacquired');
                             let html = '';
                             let update_html
                             let unacquired_html = '';
@@ -96,6 +98,12 @@
                 error: function(xhr, status, error) {
                     if (xhr.status === 400) {
                         setTimeout(req, req_interval);
+                    }
+                    if(xhr.status === 404) {
+                        const update = $('#update');
+                        $('#Loading').hide();
+                        update_html = `<p>指定されたページが見つかりませんでした</p>`
+                        update.html(update_html);
                     }
                 }
             });
