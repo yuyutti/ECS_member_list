@@ -80,33 +80,33 @@ async function updateUserStats() {
   // メンバーリストのステータスを更新する
   const data = fs.readFileSync('./data/data.json');
   const json = JSON.parse(data);
+  const memberArray = json.map(obj => Object.values(obj)[0]);
   
-  // 並列処理を使用してメンバー一人一人getEpicNameとgetPRを実行する
-  promises = json.map(async (item) => {
-    console.log(item);
+  const newJson = [];
+
+  for (const item of memberArray) {
     const epicId = await getEpicName(item.id);
     const pr = await getPR(item.trackerURL);
-    return {
+    newJson.push({
       [item.id]: {
         name: item.name,
         id: item.id,
         team: item.team,
-        id: epicId.accountID,
-        epicId: epicId.displayName,
-        powerRank: pr.powerRank,
-        points: pr.points,
-        yearPointsRank: pr.yearPointsRank,
-        yearPoints: pr.yearPoints,
-        seasonRanking: pr.seasonPoints,
+        id: epicId.accountID || item.id,
+        epicId: epicId.displayName || item.displayName,
+        powerRank: pr.powerRank || item.powerRank,
+        points: pr.points || item.points,
+        yearPointsRank: pr.yearPointsRank || item.yearPointsRank,
+        yearPoints: pr.yearPoints || item.yearPoints,
+        seasonRanking: pr.seasonPoints || item.seasonRanking,
         trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+        date: new Date().toISOString(),
       }
-    }
-  })
-
-  // 並列処理の結果を待って、データを更新する
-  const newJson = await Promise.all(promises);
+    });
+  }
+  
   fs.writeFileSync('./data/data.json', JSON.stringify(newJson, null, 4));
-  return { success : 'Member stats are updated.'};
+  return { success : 'Member stats are updated.'};  
 }
 
 async function getEpicName(arg){
