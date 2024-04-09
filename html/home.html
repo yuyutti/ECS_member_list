@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>管理ページ</title>
+</head>
+<body>
+    <div class="container">
+        <h1>メンバー管理</h1>
+
+        <div id="filters" class="mb-3">
+            <select id="filterTeam" class="form-select">
+                <option value="ECS">ECS</option>
+                <option value="ECG-競技">ECG-競技</option>
+                <option value="ECG-育成">ECG-育成</option>
+                <option value="ECG-zb">ECG-zb</option>
+            </select>
+        </div>
+
+        <table id="memberList" class="table">
+            <thead>
+                <tr>
+                    <th scope="col" onclick="sortTable(0)">名前</th>
+                    <th scope="col">EpicID</th>
+                    <th scope="col" onclick="sortTable(3)">パワーランキング</th>
+                    <th scope="col" onclick="sortTable(4)">パワーポイント</th>
+                    <th scope="col" onclick="sortTable(5)">シーズンPR</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ここにメンバー一覧が表示されます -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+    async function loadMembers() {
+        const response = await fetch('/data');
+        const members = await response.json();
+        const memberArray = members.map(obj => Object.values(obj)[0]);
+
+        const filterTeam = document.getElementById('filterTeam').value;
+        const filteredMembers = memberArray.filter(member => member.team === filterTeam);
+        const tbody = document.getElementById('memberList').querySelector('tbody');
+        tbody.innerHTML = '';
+        filteredMembers.forEach(member => {
+            const row = tbody.insertRow();
+            const link = document.createElement('a');
+            link.href = member.trackerURL;
+            link.target = "_blank";
+            link.textContent = member.name;
+            row.insertCell().appendChild(link);
+            row.insertCell().innerHTML  = `${member.epicId}<br>${member.id}`;
+            row.insertCell().textContent = member.powerRank;
+            row.insertCell().textContent = member.points;
+            row.insertCell().textContent = member.seasonRanking;
+        });
+        sortTable(2);
+    }
+
+    let sortAscending = true;
+    function sortTable(columnIndex) {
+        const table = document.getElementById('memberList');
+        const rows = Array.from(table.rows).slice(1);
+        const sortedRows = rows.sort((a, b) => {
+            const aValue = a.cells[columnIndex].textContent;
+            const bValue = b.cells[columnIndex].textContent;
+
+            const numA = parseFloat(aValue);
+            const numB = parseFloat(bValue);
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return sortAscending ? numA - numB : numB - numA;
+            }
+
+            return sortAscending ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        });
+
+        sortAscending = !sortAscending;
+        table.tBodies[0].append(...sortedRows);
+    }
+
+    window.onload = loadMembers;
+    document.getElementById('filterTeam').addEventListener('input', loadMembers);
+    </script>
+</body>
+</html>

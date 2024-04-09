@@ -1,25 +1,24 @@
 {
-  "name": "lauro-member-list",
-  "version": "1.0.0",
-  "description": "LauRoメンバーの一覧表",
+  "name": "ecs-member-list",
+  "version": "2.0.0",
+  "description": "ECSメンバーの一覧表",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LauroDeveloperTeam/LauRo-member-list.git"
+    "url": "git+https://github.com/yuyutti/ECS_member_list.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/LauroDeveloperTeam/LauRo-member-list/issues"
+    "url": "https://github.com/yuyutti/ECS_member_list/issues"
   },
-  "homepage": "https://github.com/LauroDeveloperTeam/LauRo-member-list#readme",
+  "homepage": "https://github.com/yuyutti/ECS_member_list#readme",
   "dependencies": {
     "express": "^4.18.2",
-    "request": "^2.88.2",
-    "stein-js-client": "^0.0.2"
+    "fs": "^0.0.1-security"
   }
 }

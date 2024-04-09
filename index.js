@@ -1,124 +1,143 @@
 const express = require('express')
 const app = express()
-const SteinStore = require("stein-js-client");
-const ECS = new SteinStore("https://api.steinhq.com/v1/storages/64f9cb3beced9b09e9ef9e3f");
-const ECG_competitive = new SteinStore("https://api.steinhq.com/v1/storages/64f9cb6ed27cdd09f0146222");
-const ECG_nurturing = new SteinStore("https://api.steinhq.com/v1/storages/64f9cb55eced9b09e9ef9e4e");
-const ECG_zb = new SteinStore("https://api.steinhq.com/v1/storages/64f9d664eced9b09e9efa08d");
 
-process.on('uncaughtException', function(err) {
-  console.log(err);
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static('./'));
+const fs = require('fs');
 
-let send_data_ecs
-let send_data_ecg_c
-let send_data_ecg_n
-let send_data_ecg_zb
-
-app.get('/',(req, res) => {
-  let id = req.query.id;
-  if (id !== 'ecs' && id !== 'ecg_c' && id !== 'ecg_n' && id !== 'ecg_zb') id = 'ecs';
-
-  if(id === "ecs"){
-    ECS.read("index", {authentication: { username: "yuyutti", password: "yuyutti0625" }}).then(data => {
-      send_data_ecs = data
-    });
-    res.sendFile(__dirname + "/html/index.html")
-  }
-
-  if(id === "ecg_c"){
-    ECG_competitive.read("index", {authentication: { username: "yuyutti", password: "yuyutti0625" }}).then(data => {
-      send_data_ecg_c = data
-    });
-    res.sendFile(__dirname + "/html/index.html")
-  }
-
-  if(id === "ecg_n"){
-    ECG_nurturing.read("index", {authentication: { username: "yuyutti", password: "yuyutti0625" }}).then(data => {
-      send_data_ecg_n = data
-    });
-    res.sendFile(__dirname + "/html/index.html")
-  }
-
-  if(id === "ecg_zb"){
-    ECG_zb.read("index", {authentication: { username: "yuyutti", password: "yuyutti0625" }}).then(data => {
-      send_data_ecg_zb = data
-    });
-    res.sendFile(__dirname + "/html/index.html")
-  }
-
+app.get ('/', (req, res) => {
+  res.sendFile(__dirname + '/html/home.html');
 })
 
-app.get('/data',(req,res) => {
-  let id = req.query.id;
-
-  if(id !== "ecs" && id !== "ecg_c" && id !== "ecg_n" && id !== "ecg_zb"){
-    res.status(404).json({ error: 'page not fund' });
-  }
-
-  if(id === "ecs"){
-    if (send_data_ecs && Array.isArray(send_data_ecs)) {
-      const hasPlayerName = send_data_ecs.every(item => item.playername);
-      if (hasPlayerName) {
-        res.json(send_data_ecs);
-        send_data_ecs = null;
-      } else {
-        res.status(400).json({ error: 'playername property is missing in some elements' });
-      }
-    } else {
-      res.status(400).json({ error: 'send_data is not defined or is not an array' });
-    }
-    return;
-  }
-
-  if(id === "ecg_c"){
-    if (send_data_ecg_c && Array.isArray(send_data_ecg_c)) {
-      const hasPlayerName = send_data_ecg_c.every(item => item.playername);
-      if (hasPlayerName) {
-        res.json(send_data_ecg_c);
-        send_data_ecg_c = null;
-      } else {
-        res.status(400).json({ error: 'playername property is missing in some elements' });
-      }
-    } else {
-      res.status(400).json({ error: 'send_data is not defined or is not an array' });
-    }
-    return;
-  }
-
-  if(id === "ecg_n"){
-    if (send_data_ecg_n && Array.isArray(send_data_ecg_n)) {
-      const hasPlayerName = send_data_ecg_n.every(item => item.playername);
-      if (hasPlayerName) {
-        res.json(send_data_ecg_n);
-        send_data_ecg_n = null;
-      } else {
-        res.status(400).json({ error: 'playername property is missing in some elements' });
-      }
-    } else {
-      res.status(400).json({ error: 'send_data is not defined or is not an array' });
-    }
-    return;
-  }
-
-  if(id === "ecg_zb"){
-    if (send_data_ecg_zb && Array.isArray(send_data_ecg_zb)) {
-      const hasPlayerName = send_data_ecg_zb.every(item => item.playername);
-      if (hasPlayerName) {
-        res.json(send_data_ecg_zb);
-        send_data_ecg_zb = null;
-      } else {
-        res.status(400).json({ error: 'playername property is missing in some elements' });
-      }
-    } else {
-      res.status(400).json({ error: 'send_data is not defined or is not an array' });
-    }
-    return;
-  }
+app.get('/member', (req, res) => {
+  res.sendFile(__dirname + '/html/member.html');
 })
 
-app.listen(3000, function(){
-  console.log('起動完了 => Express')
+app.get('/data', (req, res) => {
+  const data = fs.readFileSync('./data/data.json');
+  res.send(JSON.parse(data));
 })
+
+app.put('/member', async(req, res) => {
+  const response = await addMember(req.body);
+  res.send(response);
+})
+
+app.delete('/member/:id', async(req, res) => {
+  const response = await removeMember(req.params.id);
+  res.send(response);
+})
+
+app.listen(3000);
+
+async function addMember(arg) {
+  const data = fs.readFileSync('./data/data.json');
+  const json = JSON.parse(data);
+
+  const epicId = await getEpicName(arg.id);
+  if (!epicId.displayName) return { error : 'EpicID is not found.'}
+  let pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
+  if (!pr.season) {
+    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
+    if (!pr.season) return { error : 'PR is not found.'}
+  }
+
+  const newMember = {
+    [arg.id]: {
+      name: arg.name,
+      id: arg.id,
+      team: arg.team,
+      id: epicId.accountID,
+      epicId: epicId.displayName,
+      powerRank: pr.powerRank,
+      points: pr.points,
+      yearPointsRank: pr.yearPointsRank,
+      yearPoints: pr.yearPoints,
+      seasonRanking: pr.seasonPoints,
+      trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+    }
+  }
+
+  json.push(newMember);
+  fs.writeFileSync('./data/data.json', JSON.stringify(json, null, 4));
+  return { success : 'Member is added.'};
+}
+
+async function removeMember(arg) {
+  // リストからメンバーを削除する
+  const data = fs.readFileSync('./data/data.json');
+  const json = JSON.parse(data);
+  const newData = json.filter((item) => item.id !== arg.id);
+  fs.writeFileSync('./data/data.json', JSON.stringify(newData, null, 4));
+  return { success : 'Member is removed.'};
+}
+
+async function updateUserStats() {
+  // メンバーリストのステータスを更新する
+  const data = fs.readFileSync('./data/data.json');
+  const json = JSON.parse(data);
+  
+  // 並列処理を使用してメンバー一人一人getEpicNameとgetPRを実行する
+  promises = json.map(async (item) => {
+    const epicId = await getEpicName(item.id);
+    const pr = await getPR(item.trackerURL);
+    return {
+      [item.id]: {
+        name: item.name,
+        id: item.id,
+        team: item.team,
+        id: epicId.accountID,
+        epicId: epicId.displayName,
+        powerRank: pr.powerRank,
+        points: pr.points,
+        yearPointsRank: pr.yearPointsRank,
+        yearPoints: pr.yearPoints,
+        seasonRanking: pr.seasonPoints,
+        trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+      }
+    }
+  })
+
+  // 並列処理の結果を待って、データを更新する
+  const newJson = await Promise.all(promises);
+  fs.writeFileSync('./data/data.json', JSON.stringify(newJson, null, 4));
+  return { success : 'Member stats are updated.'};
+}
+
+async function getEpicName(arg){
+  const response = await fetch(`https://fortniteapi.srvr.asia/api/epicid/${arg}`)
+  return response.json();
+}
+
+async function getPR(arg){
+  const response = await fetch(`https://powerranking.srvr.asia/api/user`,{
+    method: 'POST',  
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body : JSON.stringify({ url: arg }),
+  })
+  if (response.status === 404) getPR(arg);
+  return response.json();
+}
+
+// PRのレスポンスデータ
+// {
+//   "season": 29,
+//   "accountID": "e6c5f8e5-3847-46b5-a7d0-92698b4fe82b",
+//   "region": "ASIA",
+//   "name": "ecs rafa1x",
+//   "platform": "PC",
+//   "powerRank": 707,
+//   "points": 8139,
+//   "yearPointsRank": 699,
+//   "yearPoints": 1986,
+//   "seasonRanking": 96
+//   }
+
+// EpicIDのレスポンスデータ
+// {
+//   "id": "51e5963cf8b4419a9380fbd1d36525ba",
+//   "displayName": "ecs tnkmnz"
+// }
