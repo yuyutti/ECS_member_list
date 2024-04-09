@@ -85,6 +85,7 @@
             deleteButton.textContent = '削除';
             deleteButton.addEventListener('click', () => deleteMember(member.id));
         });
+        sortTable(2);
     }
 
     let sortAscending = true;
@@ -110,7 +111,6 @@
 
     window.onload = loadMembers;
     document.getElementById('filterTeam').addEventListener('input', loadMembers);
-    sortTable(2);
     </script>
 </body>
 </html>

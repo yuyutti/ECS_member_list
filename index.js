@@ -7,8 +7,6 @@ app.use(express.urlencoded({ extended: true }));
 
 const fs = require('fs');
 
-updateUserStats();
-
 app.get ('/', (req, res) => {
   res.sendFile(__dirname + '/html/home.html');
 })
@@ -130,6 +128,7 @@ async function getPR(arg){
 cron.schedule('0 5 * * *', () => {
   updateUserStats();
 });
+
 // PRのレスポンスデータ
 // {
 //   "season": 29,
