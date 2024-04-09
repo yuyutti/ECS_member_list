@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const express = require('express')
 const app = express()
 
@@ -5,6 +6,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const fs = require('fs');
+
+updateUserStats();
 
 app.get ('/', (req, res) => {
   res.sendFile(__dirname + '/html/home.html');
@@ -80,6 +83,7 @@ async function updateUserStats() {
   
   // 並列処理を使用してメンバー一人一人getEpicNameとgetPRを実行する
   promises = json.map(async (item) => {
+    console.log(item);
     const epicId = await getEpicName(item.id);
     const pr = await getPR(item.trackerURL);
     return {
@@ -122,6 +126,10 @@ async function getPR(arg){
   return response.json();
 }
 
+// 毎朝午前5時に定期的にupdateUserStatsを実行するコードを書いてほしい
+cron.schedule('0 5 * * *', () => {
+  updateUserStats();
+});
 // PRのレスポンスデータ
 // {
 //   "season": 29,

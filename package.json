@@ -19,6 +19,7 @@
   "homepage": "https://github.com/yuyutti/ECS_member_list#readme",
   "dependencies": {
     "express": "^4.18.2",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "node-cron": "^3.0.3"
   }
 }
