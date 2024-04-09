@@ -49,7 +49,6 @@ async function addMember(arg) {
       name: arg.name,
       id: arg.id,
       team: arg.team,
-      id: epicId.accountID,
       epicId: epicId.displayName,
       powerRank: pr.powerRank,
       points: pr.points,
@@ -65,13 +64,15 @@ async function addMember(arg) {
   return { success : 'Member is added.'};
 }
 
-async function removeMember(arg) {
-  // リストからメンバーを削除する
+async function removeMember(memberId) {
   const data = fs.readFileSync('./data/data.json');
   const json = JSON.parse(data);
-  const newData = json.filter((item) => item.id !== arg.id);
+
+  // jsonがオブジェクトの配列を含んでいると仮定
+  const newData = json.filter(item => Object.keys(item)[0] !== memberId);
+
   fs.writeFileSync('./data/data.json', JSON.stringify(newData, null, 4));
-  return { success : 'Member is removed.'};
+  return { success: 'Member is removed.' };
 }
 
 async function updateUserStats() {
@@ -90,7 +91,6 @@ async function updateUserStats() {
         name: item.name,
         id: item.id,
         team: item.team,
-        id: epicId.accountID || item.id,
         epicId: epicId.displayName || item.displayName,
         powerRank: pr.powerRank || item.powerRank,
         points: pr.points || item.points,
@@ -104,7 +104,7 @@ async function updateUserStats() {
   }
   
   fs.writeFileSync('./data/data.json', JSON.stringify(newJson, null, 4));
-  return { success : 'Member stats are updated.'};  
+  return { success : 'Member stats are updated.'};
 }
 
 async function getEpicName(arg){
