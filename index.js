@@ -37,8 +37,10 @@ async function addMember(arg) {
   const json = JSON.parse(data);
 
   const epicId = await getEpicName(arg.id);
+  console.log(epicId)
   if (!epicId.displayName) return { error : 'EpicID is not found.'}
   let pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
+  if (!pr.status === 200) return { error : 'PR API is offline.'}
   if (!pr.season) {
     pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
     if (!pr.season) return { error : 'PR is not found.'}
