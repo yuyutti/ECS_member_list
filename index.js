@@ -39,12 +39,13 @@ async function addMember(arg) {
   const json = JSON.parse(data);
 
   let pr;
+  let epicId = false;
 
   if (arg.epicName) {
     pr = await getPR(`https://fortnitetracker.com/profile/kbm/${arg.epicName}/events?region=ASIA`);
   }
   else {
-    const epicId = await getEpicName(arg.id);
+    epicId = await getEpicName(arg.id);
     console.log(epicId)
     if (!epicId.displayName) return { error : 'EpicID is not found.'}
     pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
@@ -61,13 +62,13 @@ async function addMember(arg) {
       name: arg.name,
       id: arg.id,
       team: arg.team,
-      epicId: epicId.displayName || arg.epicId,
+      epicId: arg.epicId || epicId.displayName,
       powerRank: pr.powerRank.statRank,
       points: pr.powerRank.points,
       yearPointsRank: pr.powerRank.yearPointsRank,
       yearPoints: pr.powerRank.yearPoints,
       seasonRanking: (pr.prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || 0,
-      trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName || arg.epicId}/events?region=ASIA`,
+      trackerURL: `https://fortnitetracker.com/profile/kbm/${arg.epicId || epicId.displayName}/events?region=ASIA`,
       trackerEpicId: pr.powerRank.accountId,
       trackerEpicName: pr.powerRank.name,
       region: pr.powerRank.region,
