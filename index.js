@@ -38,16 +38,23 @@ async function addMember(arg) {
   const data = fs.readFileSync('./data/data.json');
   const json = JSON.parse(data);
 
-  const epicId = await getEpicName(arg.id);
-  console.log(epicId)
-  if (!epicId.displayName) return { error : 'EpicID is not found.'}
-  let pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
-  if (pr.status === 500) {
-    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events`);
-  }
-  if (!pr.status === 200) return { error : 'FortniteTracker is not found.'}
-  if (!pr.powerRank.region === 'ASIA') return { error : 'Region is not ASIA.'}
+  let pr;
 
+  if (arg.epicName) {
+    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${arg.epicName}/events?region=ASIA`);
+  }
+  else {
+    const epicId = await getEpicName(arg.id);
+    console.log(epicId)
+    if (!epicId.displayName) return { error : 'EpicID is not found.'}
+    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
+    if (pr.status === 500) {
+      pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events`);
+    }
+    if (!pr.status === 200) return { error : 'FortniteTracker is not found.'}
+    if (!pr.powerRank.region === 'ASIA') return { error : 'Region is not ASIA.'}
+  }
+  
   const newMember = {
     [arg.id]: {
       season: pr.currentSeason,

@@ -17,7 +17,13 @@
         <form id="memberForm" class="mb-3">
             <input type="text" id="name" placeholder="名前" class="form-control mb-2">
             <input type="text" id="id" placeholder="EpicID" class="form-control mb-2">
-            <input type="text" id="team" placeholder="所属チーム" class="form-control mb-2">
+            <input type="text" id="epicName" placeholder="EpicName" class="form-control mb-2" >
+            <select id="team" class="form-control mb-2">
+                <option value="ECS">ECS</option>
+                <option value="ECG-競技">ECG-競技</option>
+                <option value="ECG-育成">ECG-育成</option>
+                <option value="ECG-zb">ECG-zb</option>
+            </select>
             <button type="submit" class="btn btn-primary">メンバー追加</button>
         </form>
 
@@ -53,10 +59,11 @@
         const name = document.getElementById('name').value;
         const id = document.getElementById('id').value;
         const team = document.getElementById('team').value;
+        const epicName = document.getElementById('epicName').value || false;
         await fetch('/member', {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ name, id, team })
+            body: JSON.stringify({ name, id, team, epicName })
         });
         loadMembers();
     });
