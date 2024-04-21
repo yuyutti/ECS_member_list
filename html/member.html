@@ -83,7 +83,11 @@
         const filteredMembers = memberArray.filter(member => member.team === filterTeam);
         const tbody = document.getElementById('memberList').querySelector('tbody');
         tbody.innerHTML = '';
-        filteredMembers.forEach(member => {
+        filteredMembers.forEach(member => { 
+            // 日時をフォーマット
+            const date = new Date(member.date);
+            const formattedDate = date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
             const row = tbody.insertRow();
             const link = document.createElement('a');
             link.href = member.trackerURL;
@@ -94,7 +98,7 @@
             row.insertCell().textContent = member.powerRank;
             row.insertCell().textContent = member.points;
             row.insertCell().textContent = member.seasonRanking;
-            row.insertCell().textContent = member.date;
+            row.insertCell().textContent = formattedDate;
             const deleteButton = row.insertCell().appendChild(document.createElement('button'));
             deleteButton.textContent = '削除';
             deleteButton.addEventListener('click', () => deleteMember(member.id));
