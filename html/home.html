@@ -22,11 +22,11 @@
         <table id="memberList" class="table">
             <thead>
                 <tr>
-                    <th scope="col" onclick="sortTable(0)">名前</th>
-                    <th scope="col">EpicID</th>
-                    <th scope="col" onclick="sortTable(2)">パワーランキング</th>
-                    <th scope="col" onclick="sortTable(3)">パワーポイント</th>
-                    <th scope="col" onclick="sortTable(4)">シーズンPR</th>
+                    <th scope="col" id="nameHeader" onclick="sortTable(0)">名前</th>
+                    <th scope="col" id="epicIdHeader">EpicID</th>
+                    <th scope="col" id="powerRankHeader" onclick="sortTable(2)">パワーランキング</th>
+                    <th scope="col" id="pointsHeader" onclick="sortTable(3)">パワーポイント</th>
+                    <th scope="col" id="seasonPrHeader" onclick="sortTable(4)">シーズンPR</th>
                 </tr>
             </thead>
             <tbody>
@@ -64,17 +64,30 @@
     function sortTable(columnIndex) {
         const table = document.getElementById('memberList');
         const rows = Array.from(table.rows).slice(1);
+        const headers = ["nameHeader", "epicIdHeader", "powerRankHeader", "pointsHeader", "seasonPrHeader"];
+
         const sortedRows = rows.sort((a, b) => {
             const aValue = a.cells[columnIndex].textContent;
             const bValue = b.cells[columnIndex].textContent;
-
             const numA = parseFloat(aValue);
             const numB = parseFloat(bValue);
+            
             if (!isNaN(numA) && !isNaN(numB)) {
                 return sortAscending ? numA - numB : numB - numA;
             }
-
             return sortAscending ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        });
+
+        // 列ヘッダーにソート方向を示す記号を追加・更新
+        headers.forEach((header, index) => {
+            const headerEl = document.getElementById(header);
+            if (headerEl) {
+                headerEl.textContent = headerEl.textContent.replace(/ \u2191|\u2193/g, ""); // 現在の矢印を削除
+                if (index === columnIndex) {
+                    const arrow = sortAscending ? " \u2191" : " \u2193"; // Unicode 矢印文字
+                    headerEl.textContent += arrow;
+                }
+            }
         });
 
         sortAscending = !sortAscending;
