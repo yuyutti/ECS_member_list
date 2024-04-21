@@ -35,9 +35,6 @@ app.delete('/member/:id', async(req, res) => {
 app.listen(3000);
 
 async function addMember(arg) {
-  const data = fs.readFileSync('./data/data.json');
-  const json = JSON.parse(data);
-
   let pr;
   let epicId = false;
 
@@ -76,7 +73,8 @@ async function addMember(arg) {
       date: new Date().toISOString(),
     }
   }
-
+  const data = fs.readFileSync('./data/data.json');
+  const json = JSON.parse(data);
   json.push(newMember);
   fs.writeFileSync('./data/data.json', JSON.stringify(json, null, 4));
   return { success : 'Member is added.'};
@@ -86,7 +84,6 @@ async function removeMember(memberId) {
   const data = fs.readFileSync('./data/data.json');
   const json = JSON.parse(data);
 
-  // jsonがオブジェクトの配列を含んでいると仮定
   const newData = json.filter(item => Object.keys(item)[0] !== memberId);
 
   fs.writeFileSync('./data/data.json', JSON.stringify(newData, null, 4));
@@ -94,7 +91,6 @@ async function removeMember(memberId) {
 }
 
 async function updateUserStats() {
-  // メンバーリストのステータスを更新する
   const data = fs.readFileSync('./data/data.json');
   const json = JSON.parse(data);
   const memberArray = json.map(obj => Object.values(obj)[0]);
