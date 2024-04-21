@@ -42,7 +42,7 @@ async function addMember(arg) {
   console.log(epicId)
   if (!epicId.displayName) return { error : 'EpicID is not found.'}
   let pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
-  if (!pr.powerRank.statRank) {
+  if (pr.status === 404) {
     pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events`);
   }
   if (!pr.status === 200) return { error : 'FortniteTracker is not found.'}
