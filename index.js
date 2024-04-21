@@ -54,20 +54,20 @@ async function addMember(arg) {
     if (!pr.status === 200) return { error : 'FortniteTracker is not found.'}
     if (!pr.powerRank.region === 'ASIA') return { error : 'Region is not ASIA.'}
   }
-  
+
   const newMember = {
     [arg.id]: {
       season: pr.currentSeason,
       name: arg.name,
       id: arg.id,
       team: arg.team,
-      epicId: epicId.displayName,
+      epicId: epicId.displayName || arg.epicId,
       powerRank: pr.powerRank.statRank,
       points: pr.powerRank.points,
       yearPointsRank: pr.powerRank.yearPointsRank,
       yearPoints: pr.powerRank.yearPoints,
       seasonRanking: (pr.prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || 0,
-      trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+      trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName || arg.epicId}/events?region=ASIA`,
       trackerEpicId: pr.powerRank.accountId,
       trackerEpicName: pr.powerRank.name,
       region: pr.powerRank.region,
