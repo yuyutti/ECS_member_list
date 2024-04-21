@@ -135,7 +135,6 @@ async function getPR(arg){
     },
     body : JSON.stringify({ url: arg }),
   })
-  if (response.status === 404) getPR(arg);
   return response.json();
 }
 
