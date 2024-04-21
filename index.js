@@ -6,6 +6,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const fs = require('fs');
+const { platform } = require('os');
+const { get } = require('http');
 
 app.get ('/', (req, res) => {
   res.sendFile(__dirname + '/html/home.html');
@@ -40,24 +42,30 @@ async function addMember(arg) {
   console.log(epicId)
   if (!epicId.displayName) return { error : 'EpicID is not found.'}
   let pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
-  if (!pr.status === 200) return { error : 'PR API is offline.'}
-  if (!pr.season) {
-    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
-    if (!pr.season) return { error : 'PR is not found.'}
+  if (!pr.status === 200) {
+    pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events`);
   }
+  if (!pr.status === 200) return { error : 'FortniteTracker is not found.'}
+  if (!pr.powerRank.region === 'ASIA') return { error : 'Region is not ASIA.'}
 
   const newMember = {
     [arg.id]: {
+      season: pr.currentSeason,
       name: arg.name,
       id: arg.id,
       team: arg.team,
       epicId: epicId.displayName,
-      powerRank: pr.powerRank,
-      points: pr.points,
-      yearPointsRank: pr.yearPointsRank,
-      yearPoints: pr.yearPoints,
-      seasonRanking: pr.seasonPoints,
+      powerRank: pr.powerRank.statRank,
+      points: pr.powerRank.points,
+      yearPointsRank: pr.powerRank.yearPointsRank,
+      yearPoints: pr.powerRank.yearPoints,
+      seasonRanking: (pr.prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || 0,
       trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+      trackerEpicId: pr.powerRank.accountId,
+      trackerEpicName: pr.powerRank.name,
+      region: pr.powerRank.region,
+      platform: pr.powerRank.platform,
+      date: new Date().toISOString(),
     }
   }
 
@@ -90,16 +98,21 @@ async function updateUserStats() {
     const pr = await getPR(item.trackerURL);
     newJson.push({
       [item.id]: {
+        season: pr.currentSeason,
         name: item.name,
         id: item.id,
         team: item.team,
-        epicId: epicId.displayName || item.displayName,
-        powerRank: pr.powerRank || item.powerRank,
-        points: pr.points || item.points,
-        yearPointsRank: pr.yearPointsRank || item.yearPointsRank,
-        yearPoints: pr.yearPoints || item.yearPoints,
-        seasonRanking: pr.seasonPoints || item.seasonRanking,
+        epicId: epicId.displayName || item.epicId,
+        powerRank: pr.powerRank.statRank || item.powerRank,
+        points: pr.powerRank.points || item.points,
+        yearPointsRank: pr.powerRank.yearPointsRank || item.yearPointsRank,
+        yearPoints: pr.powerRank.yearPoints || item.yearPoints,
+        seasonRanking: (prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || item.seasonRanking,
         trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
+        trackerEpicId: pr.powerRank.accountId || item.trackerEpicId,
+        trackerEpicName: pr.powerRank.name || item.trackerEpicName,
+        region: pr.powerRank.region || item.region,
+        platform: pr.powerRank.platform || item.platform,
         date: new Date().toISOString(),
       }
     });
