@@ -19,7 +19,7 @@ app.get('/member', (req, res) => {
 })
 
 app.get('/data', (req, res) => {
-  const data = fs.readFileSync('./data/data.json');
+  const data = readFile('./data/data.json');
   res.send(JSON.parse(data));
 })
 
@@ -79,20 +79,20 @@ async function addMember(arg) {
       date: new Date().toISOString(),
     }
   }
-  const data = fs.readFileSync('./data/data.json');
+  const data = readFile('./data/data.json');
   const json = JSON.parse(data);
   json.push(newMember);
-  fs.writeFileSync('./data/data.json', JSON.stringify(json, null, 4));
+  writeFile('./data/data.json', JSON.stringify(json, null, 4));
   return { success : 'Member is added.'};
 }
 
 async function removeMember(memberId) {
-  const data = fs.readFileSync('./data/data.json');
+  const data = readFile('./data/data.json');
   const json = JSON.parse(data);
 
   const newData = json.filter(item => Object.keys(item)[0] !== memberId);
 
-  fs.writeFileSync('./data/data.json', JSON.stringify(newData, null, 4));
+  writeFile('./data/data.json', JSON.stringify(newData, null, 4));
   return { success: 'Member is removed.' };
 }
 
