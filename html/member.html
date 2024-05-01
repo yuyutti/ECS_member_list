@@ -25,6 +25,7 @@
                 <option value="ECG-zb">ECG-zb</option>
             </select>
             <button type="submit" class="btn btn-primary">メンバー追加</button>
+            <button type="update" class="btn btn-primary">更新</button>
         </form>
 
         <div id="filters" class="mb-3">
@@ -67,6 +68,13 @@
             body: JSON.stringify({ name, id, team, epicName })
         });
         loadMembers();
+    });
+    
+    document.getElementById('memberForm').addEventListener('update', async function(event) {
+        await fetch('/update', {
+            method: 'get',
+            headers: {'Content-Type': 'application/json'}
+        });
     });
     
     async function deleteMember(id) {
