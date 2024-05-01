@@ -6,8 +6,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const fs = require('fs');
-const { platform } = require('os');
-const { get } = require('http');
+const util = require('util');
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
 
 app.get ('/', (req, res) => {
   res.sendFile(__dirname + '/html/home.html');
@@ -20,6 +21,11 @@ app.get('/member', (req, res) => {
 app.get('/data', (req, res) => {
   const data = fs.readFileSync('./data/data.json');
   res.send(JSON.parse(data));
+})
+
+app.get('/update', (req, res) => {
+  updateUserStats();
+  res.send({ success : 'Member stats are updated.'});
 })
 
 app.put('/member', async(req, res) => {
@@ -91,39 +97,43 @@ async function removeMember(memberId) {
 }
 
 async function updateUserStats() {
-  const data = fs.readFileSync('./data/data.json');
-  const json = JSON.parse(data);
-  const memberArray = json.map(obj => Object.values(obj)[0]);
-  
-  const newJson = [];
+  try {
+    const data = await readFile('./data/data.json');
+    const json = JSON.parse(data);
 
-  for (const item of memberArray) {
-    const epicId = await getEpicName(item.id);
-    const pr = await getPR(item.trackerURL);
-    newJson.push({
-      [item.id]: {
-        season: pr.currentSeason,
-        name: item.name,
-        id: item.id,
-        team: item.team,
-        epicId: epicId.displayName || item.epicId,
-        powerRank: pr.powerRank.statRank || item.powerRank,
-        points: pr.powerRank.points || item.points,
-        yearPointsRank: pr.powerRank.yearPointsRank || item.yearPointsRank,
-        yearPoints: pr.powerRank.yearPoints || item.yearPoints,
-        seasonRanking: (prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || item.seasonRanking,
-        trackerURL: `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`,
-        trackerEpicId: pr.powerRank.accountId || item.trackerEpicId,
-        trackerEpicName: pr.powerRank.name || item.trackerEpicName,
-        region: pr.powerRank.region || item.region,
-        platform: pr.powerRank.platform || item.platform,
-        date: new Date().toISOString(),
+    for (const item of json) {
+      const key = Object.keys(item)[0]; // 例えば '51e5963cf8b4419a9380fbd1d36525ba'
+      try {
+        const userData = item[key];
+        const epicId = await getEpicName(userData.id);
+        const pr = await getPR(`https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`);
+        
+        // 更新するデータを設定
+        userData.season = pr.currentSeason;
+        userData.epicId = epicId.displayName || userData.epicId;
+        userData.powerRank = pr.powerRank.statRank || userData.powerRank;
+        userData.points = pr.powerRank.points || userData.points;
+        userData.yearPointsRank = pr.powerRank.yearPointsRank || userData.yearPointsRank;
+        userData.yearPoints = pr.powerRank.yearPoints || userData.yearPoints;
+        userData.seasonRanking = (pr.prSegments.find(segment => segment.segment === `season-${pr.currentSeason}`) || {}).points || userData.seasonRanking;
+        userData.trackerURL = `https://fortnitetracker.com/profile/kbm/${epicId.displayName}/events?region=ASIA`;
+        userData.trackerEpicId = pr.powerRank.accountId || userData.trackerEpicId;
+        userData.trackerEpicName = pr.powerRank.name || userData.trackerEpicName;
+        userData.region = pr.powerRank.region || userData.region;
+        userData.platform = pr.powerRank.platform || userData.platform;
+        userData.date = new Date().toISOString();
+
+        // JSONファイルに変更を書き込む
+        await writeFile('./data/data.json', JSON.stringify(json, null, 4));
+      } catch (error) {
+        continue; // エラー発生時、そのデータをスキップ
       }
-    });
+    }
+    return { success: 'Member stats are updated.' };
+  } catch (error) {
+    console.error('Fatal error reading or writing file:', error);
+    throw new Error('Failed to update user stats');
   }
-  
-  fs.writeFileSync('./data/data.json', JSON.stringify(newJson, null, 4));
-  return { success : 'Member stats are updated.'};
 }
 
 async function getEpicName(arg){
@@ -146,23 +156,3 @@ async function getPR(arg){
 cron.schedule('0 5 * * *', () => {
   updateUserStats();
 });
-
-// PRのレスポンスデータ
-// {
-//   "season": 29,
-//   "accountID": "e6c5f8e5-3847-46b5-a7d0-92698b4fe82b",
-//   "region": "ASIA",
-//   "name": "ecs rafa1x",
-//   "platform": "PC",
-//   "powerRank": 707,
-//   "points": 8139,
-//   "yearPointsRank": 699,
-//   "yearPoints": 1986,
-//   "seasonRanking": 96
-//   }
-
-// EpicIDのレスポンスデータ
-// {
-//   "id": "51e5963cf8b4419a9380fbd1d36525ba",
-//   "displayName": "ecs tnkmnz"
-// }
