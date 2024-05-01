@@ -82,7 +82,7 @@ async function addMember(arg) {
   const data = readFile('./data/data.json');
   const json = JSON.parse(data);
   json.push(newMember);
-  writeFile('./data/data.json', JSON.stringify(json, null, 4));
+  fs.writeFileSync('./data/data.json', JSON.stringify(json, null, 4));
   return { success : 'Member is added.'};
 }
 
@@ -92,7 +92,7 @@ async function removeMember(memberId) {
 
   const newData = json.filter(item => Object.keys(item)[0] !== memberId);
 
-  writeFile('./data/data.json', JSON.stringify(newData, null, 4));
+  fs.writeFileSync('./data/data.json', JSON.stringify(newData, null, 4));
   return { success: 'Member is removed.' };
 }
 
